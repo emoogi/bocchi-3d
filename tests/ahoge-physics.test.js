@@ -47,3 +47,12 @@ test('연속 낙하 조각은 서로 충돌하고 바닥에서 안정적으로 �
  for(const {body} of physics.drops){assert.ok([body.position.x,body.position.y,body.position.z,body.quaternion.w].every(Number.isFinite));assert.ok(body.position.y<.8);assert.ok(body.velocity.length()<.4)}
  assert.equal(physics.landed,6);
 });
+
+test('낙하 조각은 시간과 추가 생성으로 사라지지 않고 초기화로만 제거된다',()=>{
+ const scene=new THREE.Scene(),physics=createAhogePhysics(scene),source=accessory();
+ const first=physics.spawn(source,new THREE.Vector3());
+ for(let i=0;i<14;i++){physics.spawn(source,new THREE.Vector3());for(let j=0;j<120;j++)physics.step(1/120)}
+ assert.equal(physics.drops.length,15);assert.ok(scene.children.includes(first.mesh));assert.ok(physics.world.bodies.includes(first.body));
+ assert.ok(physics.drops.every(d=>Number.isFinite(d.body.position.y)));
+ physics.clear();assert.equal(physics.drops.length,0);assert.equal(scene.children.length,0);assert.equal(physics.world.bodies.length,1);
+});

@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { createCharacter } from './character.js';
 import { createAhogePhysics } from './ahoge-physics.js';
-import { inputVector, stepPosition, turnToward, WALK_SPEED, DASH_SPEED } from './movement.js';
+import { inputVector, stepPosition, turnToward, WALK_SPEED, DASH_SPEED, WALK_RADIUS } from './movement.js';
 export function createScene(container,state){
  const scene=new THREE.Scene();scene.background=new THREE.Color('#e2e0e5');scene.fog=new THREE.Fog('#e2e0e5',12,27);
  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
@@ -66,7 +66,7 @@ export function createScene(container,state){
  function resetCamera(){const {x,z}=character.root.position;camera.position.set(x+2.3-frameOffset(),3.15,z+8);orbit.target.set(x-frameOffset(),1.68,z);camera.zoom=1;camera.updateProjectionMatrix();orbit.update()}
  function resetPosition(){clearDrops();lookTarget=null;character.root.position.set(0,0,0);character.root.rotation.set(0,0,0);resetCamera()}
  function animate(now){if(disposed)return;raf=requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.05);last=now;if(document.hidden)return;t+=dt;const input=inputVector(state.directions),moving=Boolean(input.x||input.y);state.moving=moving;
-  if(moving){lookTarget=null;if(state.gesture)state.onGestureCancel();camera.getWorldDirection(forward);forward.y=0;forward.normalize();const next=stepPosition(character.root.position,input,forward,dt,state.dashing?DASH_SPEED:WALK_SPEED,2.65,obstacles);const dx=next.x-character.root.position.x,dz=next.z-character.root.position.z;character.root.position.x=next.x;character.root.position.z=next.z;
+  if(moving){lookTarget=null;if(state.gesture)state.onGestureCancel();camera.getWorldDirection(forward);forward.y=0;forward.normalize();const next=stepPosition(character.root.position,input,forward,dt,state.dashing?DASH_SPEED:WALK_SPEED,WALK_RADIUS,obstacles);const dx=next.x-character.root.position.x,dz=next.z-character.root.position.z;character.root.position.x=next.x;character.root.position.z=next.z;
    if(Math.hypot(dx,dz)>.00001)character.root.rotation.y=turnToward(character.root.rotation.y,Math.atan2(dx,dz),dt);
   }
   if(!moving&&lookTarget!==null)character.root.rotation.y=turnToward(character.root.rotation.y,lookTarget,dt);

@@ -1,7 +1,7 @@
-*{box-sizing:border-box}
+*{box-sizing:border-box;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none}
 body{margin:8px}
 button,input{font:inherit}
-button{cursor:pointer}
+button{cursor:pointer;touch-action:manipulation}
 .workspace{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:12px;height:calc(100svh - 16px)}
 .stage{position:relative;min-width:0;min-height:0}
 h1{position:absolute;top:0;left:12px;z-index:1;pointer-events:none;font-size:2em;margin:.5em 0}
@@ -17,7 +17,7 @@ button[aria-pressed=true],button.is-down{background:#d5d5d5;border-style:inset}
 .settings{display:flex;flex-wrap:wrap;gap:6px}
 .movement{position:absolute;bottom:16px;left:16px}
 .dpad{display:grid;grid-template-columns:44px 44px 44px;grid-template-rows:44px 44px;gap:4px}
-.dpad button,#dash{touch-action:none;user-select:none;-webkit-user-select:none}
+.dpad button,#dash{touch-action:none}
 .up{grid-column:2}.left{grid-column:1;grid-row:2}.down{grid-column:2;grid-row:2}.right{grid-column:3;grid-row:2}
 #dash{position:absolute;bottom:16px;right:16px;min-height:44px;padding:4px 12px}
 .keys-hidden .movement,.keys-hidden #dash{display:none}

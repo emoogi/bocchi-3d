@@ -33,15 +33,12 @@ export function createAhogePhysics(scene,amplifier){
    body.addShape(new Box(half),new Vec3(center.x,center.y,center.z),new Quaternion(q.x,q.y,q.z,q.w));
   });
   body.velocity.copy(velocity);body.angularVelocity.set(reducedMotion?.6:2.1,reducedMotion?.2:.7,reducedMotion?-.3:-1.4);
-  world.addBody(body);const drop={mesh,body,age:0};drops.push(drop);
-  if(drops.length>12)remove(drops.shift());
+  world.addBody(body);const drop={mesh,body};drops.push(drop);
   return drop;
  }
  function step(dt){
   world.step(1/120,Math.min(dt,.05),6);
-  for(let i=drops.length-1;i>=0;i--){
-   const drop=drops[i];drop.age+=dt;
-   if(drop.age>12){remove(drop);drops.splice(i,1);continue}
+  for(const drop of drops){
    drop.mesh.position.copy(drop.body.position);drop.mesh.quaternion.copy(drop.body.quaternion);
   }
  }
