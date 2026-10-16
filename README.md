@@ -413,3 +413,9 @@ Sites 프로젝트: `appgprj_6ad0848f163c8191ae961bc811d3c0f1`.
 - 버전: `appgprj_6ad0848f163c8191ae961bc811d3c0f1~appgver_1d8da6cdadcc8191abeba4d7e614b0a7`
 - 배포: `appgdep_6ad1aa9d8e08819185642cb46daf3c58`
 - 배포 후 이 결과 기록만 README에 추가했다.
+
+## GitHub 소스 보관 — 2026-10-16
+
+사용자가 생성한 비공개 저장소 `https://github.com/emoogi/bocchi-3d`의 `main`에 현재 소스와 참고 자료 44개를 업로드했다. 초기 소스 커밋은 `960fbcdd24d05924d414f8661d7764e3d01cc5d7`이며 로컬 기준 `009cd2b9294397c6ed250f97157f8df42c92472c`와 전체 Git 트리 해시 `dd1da7cafb53e5df113566f96bdc8afd20d7883d`가 일치한다. `node_modules`, `dist`, 로컬 Git 메타데이터는 업로드 대상에서 제외했다.
+
+GitHub 연결 MCP로 현재 파일 스냅샷을 새 저장소에 커밋했다. 기존 Sites 개발 커밋 이력은 로컬 Git에 보존돼 있고, GitHub의 초기 커밋 이력과는 별개다. 로컬 `origin`은 위 GitHub 저장소 URL로 연결했으며, 기존 로컬 브랜치를 초기화하거나 이력을 덮어쓰지 않았다. GitHub CLI/Git 업로드 인증은 아직 설정돼 있지 않으므로 이후 명령행 push에는 GitHub 인증 설정이 필요하다. 이번 업로드는 코드 변경이 없어 직전 통과한 테스트 9개와 생산 빌드 결과를 사용했다.
