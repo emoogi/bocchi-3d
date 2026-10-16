@@ -1,6 +1,8 @@
 import './style.css';
 import { createScene } from './scene.js';
 import { EMOTIONS } from './face.js';
+import conceptUI from '../design/interface-concept.png';
+import normalOutline from '../design/emotion-normal-outline.png';
 import { KEY_DIRECTIONS } from './movement.js';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const state={emotion:'normal',gesture:null,directions:new Set(),moving:false,dashing:false,reducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches};
@@ -19,7 +21,11 @@ function setGesture(id){clearTimeout(gestureTimer);state.gesture=id;$$('[data-ge
 state.onGestureCancel=()=>setGesture(null);
 function toggleGesture(id){clearInput();scene?.faceCamera();setGesture(state.gesture===id?null:id)}
 for(const [index,info] of EMOTIONS.entries()){
- const b=document.createElement('button');b.dataset.emotion=info.id;b.setAttribute('aria-pressed',String(index===0));b.title=`${info.label} (${index+1})`;b.textContent=info.label;b.addEventListener('click',()=>setEmotion(info.id));$('.emotion-grid').append(b);
+ const b=document.createElement('button');b.dataset.emotion=info.id;b.setAttribute('aria-pressed',String(index===0));b.title=`${info.label} (${index+1})`;
+ const icon=document.createElement('span');icon.className='emotion-icon';icon.setAttribute('aria-hidden','true');icon.style.setProperty('--icon-x',index%2?1345:1150);icon.style.setProperty('--icon-y',[314,405,497][Math.floor(index/2)]);
+ const img=document.createElement('img');img.src=conceptUI;img.alt='';img.draggable=false;icon.append(img);
+ if(info.id==='normal'){img.className='selected-art';const outline=document.createElement('img');outline.className='normal-art';outline.src=normalOutline;outline.alt='';outline.draggable=false;icon.append(outline)}
+ b.append(icon,document.createTextNode(info.label));b.addEventListener('click',()=>setEmotion(info.id));$('.emotion-grid').append(b);
 }
 $$('[data-gesture]').forEach(b=>b.addEventListener('click',()=>toggleGesture(b.dataset.gesture)));
 $$('[data-move]').forEach(b=>{
@@ -47,6 +53,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('keyup',e=>{keyboard.delete(e.code);dashKeys.delete(e.code);updateDirections()});
 window.addEventListener('blur',clearInput);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearInput()});
 $('#show-keys').addEventListener('change',e=>{document.body.classList.toggle('keys-hidden',!e.target.checked);clearInput()});
+$('#slop-ui').addEventListener('change',e=>document.body.classList.toggle('slop-ui',e.target.checked));
 $('#camera-reset').addEventListener('click',()=>scene?.resetCamera());
 $('#reset').addEventListener('click',()=>{clearInput();setEmotion('normal');setGesture(null);scene?.resetPosition()});
 $('#retry').addEventListener('click',()=>location.reload());

@@ -8,6 +8,7 @@
 <link rel="icon" href="data:,">
 </head>
 <body>
+<header class="slop-topbar" aria-hidden="true"><span>bocchi’s room</span><i class="slop-clips"><b></b><b></b></i></header>
 <main class="workspace">
 <section class="stage" aria-label="bocchi 3D">
 <h1>bocchi</h1>
@@ -30,7 +31,8 @@
 <button data-gesture="crouch" aria-pressed="false" title="C">웅크리기</button>
 <button data-gesture="guitar" aria-pressed="false" title="V">기타 연주</button>
 </div></fieldset>
-<label><input id="show-keys" type="checkbox" checked> 화면 조작키</label>
+<label class="screen-keys-toggle"><input id="show-keys" type="checkbox" checked> 화면 조작키</label>
+<label class="ui-style-toggle"><input id="slop-ui" type="checkbox"> 흔한 슬롭 디자인</label>
 <div class="settings"><button id="camera-reset" title="R">시점 초기화</button><button id="reset">처음으로</button></div>
 </aside>
 </main>

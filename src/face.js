@@ -55,9 +55,9 @@ export function drawFace(canvas,emotion='normal',blink=false){
     c.moveTo(-34,emotion==='anxious'?206:214);c.lineTo(34,224);
     c.strokeStyle='#c2a0a6';c.lineWidth=3;c.stroke();c.restore();
     if(emotion==='shy'){
-      ellipse(c,x,376,55,19,'rgba(237,145,162,.20)');
+      ellipse(c,x,376,55,19,'rgba(237,145,162,.26)');
       for(let j=0;j<4;j++)line(c,[[x-28+j*18,365],[x-35+j*18,382]],'rgba(219,132,150,.49)',2.5);
-    }else if(emotion==='normal'||emotion==='sleepy')ellipse(c,x,404,35,8,'rgba(237,152,164,.10)');
+    }else if(emotion==='normal'||emotion==='sleepy')ellipse(c,x,404,35,8,'rgba(237,152,164,.16)');
   }
   c.fillStyle='#cf899b';
   if(emotion==='anxious'){
