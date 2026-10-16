@@ -92,23 +92,6 @@ export function hairCrown(parent, material) {
   const top=v.length/3;v.push(0,.813,-.035);for(let i=0;i<n;i++)ids.push(i,(i+1)%n,top);
   const crownMaterial=material.clone();crownMaterial.flatShading=false;
   const crown=addMesh(parent,softFacets(geometry(v,ids),.36),crownMaterial);crown.name='Hair crown';
-  // A thin recessed band closes only the upper slit interiors. It follows
-  // the fringe panels, not a second scalp dome, and ends above the eyes.
-  const liningV=[],liningI=[],liningCols=25;
-  for(let row=0;row<3;row++)for(let i=0;i<liningCols;i++){
-    const a=THREE.MathUtils.lerp(-1.08,1.18,i/(liningCols-1));
-    const x=Math.sin(a)*[.665,.72,.72][row];
-    const y=[.43,.30,.105][row]+.025*Math.cos(a*3);
-    const z=Math.max(Math.cos(a)*.65-.065,faceDepth(x,y)+.018);
-    liningV.push(x,y,z);
-  }
-  for(let row=0;row<2;row++)for(let i=0;i<liningCols-1;i++){
-    const a=row*liningCols+i,b=a+1,c=a+liningCols,d=c+1;
-    liningI.push(a,c,b,b,c,d);
-  }
-  const liningMaterial=material.clone();liningMaterial.side=THREE.DoubleSide;
-  liningMaterial.color.multiplyScalar(.68);liningMaterial.flatShading=false;
-  const lining=addMesh(parent,geometry(liningV,liningI),liningMaterial);lining.name='Recessed fringe lining';
   for(const [from,to,tipX,tipY,tipZ,tint] of [
     [-11,-7,-.54,-.32,.43,.94],[-7,-4,-.42,-.03,.56,1.025],
     [-4,-2,-.195,-.08,.60,.93],[-2,3,.025,-.165,.615,.985],
@@ -292,10 +275,10 @@ export function faceDepth(x,y){
   return .485-.10*(x/.64)**2-.045*((y+.01)/.51)**2+.04*Math.exp(-(((y+.08)/.32)**2))-.035*THREE.MathUtils.smoothstep(-y,.24,.425)-.18*THREE.MathUtils.smoothstep(y,.12,.28)-temple;
 }
 export function faceGeometry() {
-  const n=20,v=[],ids=[];
+  const n=40,rows=9,v=[],ids=[];
   // Broad lower cheeks and a shallow chin match the short reference face.
-  for(let j=0;j<5;j++){
-    const scale=[.02,.30,.60,.82,1][j];
+  for(let j=0;j<rows;j++){
+    const scale=.02+.98*j/(rows-1);
     for(let i=0;i<n;i++){
       const a=i/n*Math.PI*2,y=Math.sin(a)*.45+.025;
       const lower=THREE.MathUtils.smoothstep(-y,.08,.425),cs=Math.cos(a);
@@ -304,18 +287,18 @@ export function faceGeometry() {
       v.push(x,sy,faceDepth(x,sy));
     }
   }
-  joinRings(ids,n,5);
+  joinRings(ids,n,rows);
   const center=v.length/3;v.push(0,.025,faceDepth(0,.025));for(let i=0;i<n;i++)ids.push(center,i,(i+1)%n);
   const back=v.length/3;
-  for(let i=0;i<n;i++){const k=(4*n+i)*3;v.push(v[k]*.91,v[k+1]*.95,-.25)}
-  for(let i=0;i<n;i++){const a=4*n+i,b=4*n+(i+1)%n,c=back+i,d=back+(i+1)%n;ids.push(a,c,b,b,c,d)}
+  for(let i=0;i<n;i++){const k=((rows-1)*n+i)*3;v.push(v[k]*.91,v[k+1]*.95,-.25)}
+  for(let i=0;i<n;i++){const a=(rows-1)*n+i,b=(rows-1)*n+(i+1)%n,c=back+i,d=back+(i+1)%n;ids.push(a,c,b,b,c,d)}
   // Shade the skin itself: the facial decal does not cover the temple or
   // side walls, which otherwise shine through narrow gaps between locks.
   const g=geometry(v,ids),positions=g.getAttribute('position'),colors=[];
   const shade=new THREE.Color('#9b849c'),white=new THREE.Color('#ffffff');
   for(let i=0;i<positions.count;i++){
     const x=positions.getX(i),y=positions.getY(i),z=positions.getZ(i);
-    const forehead=THREE.MathUtils.smoothstep(y,.09,.25);
+    const forehead=THREE.MathUtils.smoothstep(y,.03,.13);
     const side=THREE.MathUtils.smoothstep(Math.abs(x),.48,.61)*THREE.MathUtils.smoothstep(y,-.34,-.12);
     const rear=1-THREE.MathUtils.smoothstep(z,-.22,.18);
     const color=white.clone().lerp(shade,Math.max(forehead,side,rear));
