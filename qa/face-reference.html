@@ -1,0 +1,21 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>얼굴 참고 이미지 비교</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:16px;background:#eee;color:#28262d;font:16px system-ui}h1{font-size:20px;margin:0 0 12px}main{display:grid;grid-template-columns:1fr 1fr;gap:16px}h2{font-size:16px;margin:0 0 8px}img{width:100%;display:block}.grid{display:grid;grid-template-columns:repeat(3,1fr);background:#3c414b;gap:2px}figure{margin:0;min-width:0;text-align:center;color:#eee}canvas{display:block;width:100%;aspect-ratio:1.2}figcaption{height:30px}button{margin:14px 8px 0 0;padding:8px}
+</style>
+<h1>얼굴 참고 이미지 · 실제 모델 정면 비교</h1><main><section><h2>사용자 제공 기준</h2><img src="/design/face-reference-sheet.png"></section><section><h2>현재 3D 모델</h2><div class="grid" id="faces"></div></section></main>
+<button id="front">정면</button><button id="quarter">측면 35도</button><button id="profile">측면 90도</button><button id="opposite">반대 사선</button>
+<script type="module">
+import * as THREE from 'three';
+import {createCharacter} from '/src/character.js';
+import {EMOTIONS} from '/src/face.js';
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(480,400);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=1.02;
+const scene=new THREE.Scene();scene.background=new THREE.Color('#3c414b');
+scene.add(new THREE.HemisphereLight(0xffffff,0xb6a9b7,2.2));
+const key=new THREE.DirectionalLight(0xfff4ef,1.9);key.position.set(-3.5,7,5);scene.add(key);
+const fill=new THREE.DirectionalLight(0xe5edff,.8);fill.position.set(4,3,-3);scene.add(fill);
+const character=createCharacter();scene.add(character.root);
+const camera=new THREE.OrthographicCamera(-.84,.84,.70,-.70,.1,30);camera.position.set(0,3.23,8);camera.lookAt(0,3.23,0);
+const canvases=EMOTIONS.map(({id,label})=>{const figure=document.createElement('figure'),canvas=document.createElement('canvas'),caption=document.createElement('figcaption');canvas.width=480;canvas.height=400;canvas.setAttribute('aria-label',label);caption.textContent=label;figure.append(canvas,caption);document.querySelector('#faces').append(figure);return{id,canvas}});
+function draw(angle){character.root.rotation.y=angle;for(const {id,canvas} of canvases){character.animate(0,10,{emotion:id,moving:false,gesture:null,reducedMotion:true});renderer.render(scene,camera);canvas.getContext('2d').drawImage(renderer.domElement,0,0)}}
+document.querySelector('#front').onclick=()=>draw(0);document.querySelector('#quarter').onclick=()=>draw(.61);document.querySelector('#profile').onclick=()=>draw(Math.PI/2);document.querySelector('#opposite').onclick=()=>draw(-.61);draw(0);
+</script></html>

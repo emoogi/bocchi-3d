@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="bocchi 3D">
+<title>bocchi</title>
+<link rel="icon" href="data:,">
+</head>
+<body>
+<main class="workspace">
+<section class="stage" aria-label="bocchi 3D">
+<h1>bocchi</h1>
+<div id="viewport" tabindex="0" aria-label="3D 공간. WASD 또는 방향키로 이동, Shift로 대시, 드래그로 회전, 스크롤로 확대"></div>
+<div id="loading" role="status">불러오는 중…</div>
+<div id="error" hidden role="alert"><p>3D 화면을 열 수 없습니다.</p><button id="retry">다시 시도</button></div>
+<div class="movement"><div class="dpad" aria-label="화면 이동키">
+<button data-move="up" class="up" aria-label="앞으로 이동 W">W</button>
+<button data-move="left" class="left" aria-label="왼쪽 이동 A">A</button>
+<button data-move="down" class="down" aria-label="뒤로 이동 S">S</button>
+<button data-move="right" class="right" aria-label="오른쪽 이동 D">D</button>
+</div></div>
+<button id="dash" aria-label="대시 Shift" aria-pressed="false">대시 (Shift)</button>
+</section>
+<aside class="controls" aria-label="캐릭터 조작">
+<fieldset><legend>감정</legend><div class="emotion-grid" role="group" aria-label="감정 선택"></div></fieldset>
+<fieldset><legend>제스처</legend><div class="gesture-list" role="group" aria-label="제스처 선택">
+<button data-gesture="fidget" aria-pressed="false" title="Z">손가락 꼼지락</button>
+<button data-gesture="wave" aria-pressed="false" title="X">작게 인사</button>
+<button data-gesture="crouch" aria-pressed="false" title="C">웅크리기</button>
+<button data-gesture="guitar" aria-pressed="false" title="V">기타 연주</button>
+</div></fieldset>
+<label><input id="show-keys" type="checkbox" checked> 화면 조작키</label>
+<div class="settings"><button id="camera-reset" title="R">시점 초기화</button><button id="reset">처음으로</button></div>
+</aside>
+</main>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

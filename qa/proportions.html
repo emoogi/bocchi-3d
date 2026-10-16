@@ -1,0 +1,46 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>모델 인체 비율 검토</title>
+<style>*{box-sizing:border-box}body{margin:16px;background:#eee;color:#28262d;font:15px system-ui}h1{font-size:20px}main{display:flex;align-items:start;gap:20px}figure{margin:0;width:260px;flex:0 0 260px}section{min-width:0}#validation{max-width:500px;overflow-wrap:anywhere}img,canvas{width:100%;display:block;background:#3c414b}figcaption{padding:8px 0}button{padding:8px;margin:10px 6px 10px 0}output{display:block;max-width:500px;white-space:pre-wrap}</style>
+<h1>참고 비율 · 현재 모델 검토</h1><main><figure><img src="/design/chibi-reference.png"><figcaption>사용자 제공 치비 기준</figcaption></figure><figure><canvas id="model" width="346" height="768"></canvas><figcaption>실제 3D 모델</figcaption></figure><section><button data-pose="neutral">비율 정면</button><button data-pose="normal">기본 자세</button><button data-pose="side">측면</button><br><button data-pose="wave">인사</button><button data-pose="crouch">웅크리기</button><button data-pose="guitar">기타</button><output id="measurements"></output><p id="validation"></p></section></main>
+<script type="module">
+import * as THREE from 'three';import {createCharacter,BODY} from '/src/character.js';
+const canvas=document.querySelector('#model'),renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setSize(346,768,false);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=1.02;
+const scene=new THREE.Scene();scene.background=new THREE.Color('#3c414b');scene.add(new THREE.HemisphereLight(0xffffff,0xb6a9b7,2.2));
+const key=new THREE.DirectionalLight(0xfff4ef,1.9);key.position.set(-3.5,7,5);scene.add(key);const fill=new THREE.DirectionalLight(0xe5edff,.8);fill.position.set(4,3,-3);scene.add(fill);
+const c=createCharacter();scene.add(c.root);const camera=new THREE.OrthographicCamera(-.97,.97,2.153,-2.153,.1,30);camera.position.set(0,1.9,8);camera.lookAt(0,1.9,0);
+let activePose="neutral";
+function draw(pose,time=0,dt=10){const close=pose.startsWith('head');camera.left=close?-.70:-.97;camera.right=close?.70:.97;camera.top=close?1.554:2.153;camera.bottom=-camera.top;camera.position.set(0,close?2.80:1.9,8);camera.lookAt(0,close?2.80:1.9,0);camera.updateProjectionMatrix();c.root.rotation.y=pose.includes('side')?Math.PI/2:pose.includes('back')?Math.PI:pose.includes('quarter')?.65:0;c.animate(time,dt,{emotion:'normal',moving:pose.includes('walking')||pose.includes('dash'),dashing:pose.includes('dash'),gesture:pose.startsWith('crouch')?'crouch':pose.startsWith('guitar')?'guitar':pose==='wave'?'wave':null,reducedMotion:!pose.includes('walking')&&!pose.includes('dash')});if(pose==='neutral'||pose==='side')for(const a of c.arms){a.pivot.rotation.set(0,0,a.side*.06);a.elbow.rotation.set(0,0,0)}c.root.updateMatrixWorld(true);renderer.render(scene,camera);const feet=c.legs.map(l=>new THREE.Box3().setFromObject(l.foot));document.querySelector('#measurements').textContent=JSON.stringify({pose,totalHeight:BODY.height,headHeight:Number((1.238*c.head.scale.y).toFixed(3)),heads:Number((BODY.height/(1.238*c.head.scale.y)).toFixed(2)),shoulder:BODY.shoulder,hip:BODY.hip,knee:BODY.knee,ankle:BODY.ankle,soleHeights:feet.map(b=>Number(b.min.y.toFixed(3)))},null,2)}
+c.root.updateMatrixWorld(true);
+const backHair=c.root.getObjectByName('Split long hair'),backPositions=backHair.geometry.attributes.position,seam=[];
+for(let i=0;i<backPositions.count;i++)if(Math.abs(backPositions.getY(i)*1.25-.125-.19)<1e-6)seam.push({i,p:new THREE.Vector3().fromBufferAttribute(backPositions,i).applyMatrix4(c.hairGroup.matrix)});
+let samples=0,maxGroundError=0,nonFinite=0,maxHairSeamGap=0;
+const seamPoint=new THREE.Vector3(),seamRest=new THREE.Vector3();
+for(const pose of ['crouch','normal','wave','guitar','walking','dashing','normal'])for(let frame=0;frame<60;frame++){
+ c.animate(samples/60,1/60,{emotion:'normal',moving:pose==='walking'||pose==='dashing',dashing:pose==='dashing',gesture:['crouch','wave','guitar'].includes(pose)?pose:null,reducedMotion:false});c.root.updateMatrixWorld(true);
+ for(const item of seam){
+  seamPoint.fromBufferAttribute(backPositions,item.i).applyMatrix4(backHair.matrixWorld);
+  seamRest.copy(item.p).applyMatrix4(c.head.matrixWorld);
+  maxHairSeamGap=Math.max(maxHairSeamGap,seamPoint.distanceTo(seamRest));
+ }
+ const lowest=Math.min(...c.legs.map(l=>new THREE.Box3().setFromObject(l.foot).min.y));maxGroundError=Math.max(maxGroundError,Math.abs(lowest-.007));samples++;
+}
+let guitarClearance=Infinity,walkClearance=Infinity,visibleGuitarFrames=0;
+const pt=new THREE.Vector3(),instrumentInverse=new THREE.Matrix4(),bodyInverse=new THREE.Matrix4();
+for(const mode of ['guitar','walking']){
+ for(let frame=0;frame<180;frame++){
+  c.animate(frame/60,1/60,{emotion:'normal',moving:mode==='walking',gesture:mode==='guitar'?'guitar':null,reducedMotion:false});c.root.updateMatrixWorld(true);
+  if(frame<60)continue;
+  instrumentInverse.copy(c.guitar.matrixWorld).invert();bodyInverse.copy(c.torso.matrixWorld).invert();
+  if(mode==='guitar'&&c.guitar.visible)visibleGuitarFrames++;
+  for(const arm of c.arms)arm.hand.traverse(o=>{if(!o.geometry)return;const a=o.geometry.getAttribute('position');for(let i=0;i<a.count;i++){
+   pt.fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld).applyMatrix4(mode==='guitar'?instrumentInverse:bodyInverse);
+   if(mode==='guitar')guitarClearance=Math.min(guitarClearance,pt.z-.182);
+   else walkClearance=Math.min(walkClearance,arm.side*pt.x-.45);
+  }});
+ }
+}
+c.root.traverse(o=>{if(o.geometry)for(const a of ['position','normal'])for(const n of o.geometry.getAttribute(a)?.array||[])if(!Number.isFinite(n))nonFinite++});
+document.querySelector('#validation').textContent=JSON.stringify({samples,maxHairSeamGap:Number(maxHairSeamGap.toFixed(9)),maxGroundError:Number(maxGroundError.toFixed(6)),nonFinite,guitarClearance:Number(guitarClearance.toFixed(4)),walkClearance:Number(walkClearance.toFixed(4)),visibleGuitarFrames,passed:maxHairSeamGap<1e-7&&maxGroundError<.0001&&nonFinite===0&&guitarClearance>0&&walkClearance>0&&visibleGuitarFrames===120});
+for(const [pose,label] of [['head-back-walking','후면 걷기'],['head-back-dash','후면 대시'],['walking','걷기'],['walking-quarter','걷기 사선'],['guitar-side','기타 측면'],['guitar-quarter','기타 사선'],['head-back','머리 후면'],['head-quarter','머리 사선'],['back','후면'],['quarter','비스듬히'],['crouch-side','웅크리기 측면'],['crouch-quarter','웅크리기 사선']]){const b=document.createElement('button');b.dataset.pose=pose;b.textContent=label;document.querySelector('section').append(b)}
+for(const b of document.querySelectorAll('button'))b.onclick=()=>{activePose=b.dataset.pose;draw(activePose)};draw('neutral');
+let last=performance.now();function tick(now){const dt=Math.min((now-last)/1000,.05);last=now;if(activePose.includes('walking')||activePose.includes('dash'))draw(activePose,now/1000,dt);requestAnimationFrame(tick)}requestAnimationFrame(tick);
+</script></html>
