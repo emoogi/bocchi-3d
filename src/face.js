@@ -10,8 +10,8 @@ const ellipse=(c,x,y,rx,ry,fill)=>{c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI
 function line(c,points,color,width=7){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.lineWidth=width;c.lineCap='butt';c.lineJoin='miter';c.strokeStyle=color;c.stroke()}
 // Supplied face sheet: navy/cyan eyes with upper lids inside the eye width.
 // Narrow warm sclera at the sides; no projecting lashes, pupils or glints.
-function openEye(c,x,languid,side){
-  const top=languid?288:231,bottom=391,w=49,outer=60,h=bottom-top;
+function openEye(c,x,languid,side,shorter=false){
+  const top=languid?288:231,bottom=shorter?381:391,w=49,outer=60,h=bottom-top;
   c.save();c.translate(x,top);
   const left=side*-outer*.12,right=side*outer*.12;
   c.beginPath();c.moveTo(-outer,left);c.lineTo(outer,right);c.lineTo(outer-2,h*.76);
@@ -56,7 +56,7 @@ export function drawFace(canvas,emotion='normal',blink=false){
     else if(emotion==='anxious'){
       // Different UV axis scales require these radii to render circular eyes.
       ellipse(c,x,321,57,73,'#5c8ca6');ellipse(c,x,321,45,58,'#dce6eb');
-    }else openEye(c,x,emotion==='despair',side);
+    }else openEye(c,x,emotion==='despair',side,emotion==='normal'||emotion==='surprised');
     // Subtle brows sit mostly beneath the overlapping vertical fringe.
     c.save();c.translate(x,0);c.scale(side,1);c.beginPath();
     c.moveTo(-34,emotion==='anxious'?206:214);c.lineTo(34,224);

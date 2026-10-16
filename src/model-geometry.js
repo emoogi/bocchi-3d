@@ -92,6 +92,23 @@ export function hairCrown(parent, material) {
   const top=v.length/3;v.push(0,.813,-.035);for(let i=0;i<n;i++)ids.push(i,(i+1)%n,top);
   const crownMaterial=material.clone();crownMaterial.flatShading=false;
   const crown=addMesh(parent,softFacets(geometry(v,ids),.36),crownMaterial);crown.name='Hair crown';
+  // A thin recessed band closes only the upper slit interiors. It follows
+  // the fringe panels, not a second scalp dome, and ends above the eyes.
+  const liningV=[],liningI=[],liningCols=25;
+  for(let row=0;row<3;row++)for(let i=0;i<liningCols;i++){
+    const a=THREE.MathUtils.lerp(-1.08,1.18,i/(liningCols-1));
+    const x=Math.sin(a)*[.665,.72,.72][row];
+    const y=[.43,.30,.105][row]+.025*Math.cos(a*3);
+    const z=Math.max(Math.cos(a)*.65-.065,faceDepth(x,y)+.018);
+    liningV.push(x,y,z);
+  }
+  for(let row=0;row<2;row++)for(let i=0;i<liningCols-1;i++){
+    const a=row*liningCols+i,b=a+1,c=a+liningCols,d=c+1;
+    liningI.push(a,c,b,b,c,d);
+  }
+  const liningMaterial=material.clone();liningMaterial.side=THREE.DoubleSide;
+  liningMaterial.color.multiplyScalar(.68);liningMaterial.flatShading=false;
+  const lining=addMesh(parent,geometry(liningV,liningI),liningMaterial);lining.name='Recessed fringe lining';
   for(const [from,to,tipX,tipY,tipZ,tint] of [
     [-11,-7,-.54,-.32,.43,.94],[-7,-4,-.42,-.03,.56,1.025],
     [-4,-2,-.195,-.08,.60,.93],[-2,3,.025,-.165,.615,.985],
