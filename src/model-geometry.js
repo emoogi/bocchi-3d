@@ -121,12 +121,13 @@ export function hairCrown(parent, material) {
           y=.42+.025*Math.cos(angle*3);
           z=Math.max(Math.cos(angle)*.64-.035,faceDepth(x,y)+.04);
         }else if(row===2){
-          x=Math.sin(angle)*.72;
-          y=.30+.04*Math.cos(angle*3)+.01*Math.sin(angle*7);
-          z=Math.max(Math.cos(angle)*.66-.035,faceDepth(x,y)+.04);
+          const a=THREE.MathUtils.lerp(angle,(start+end)/2,.08);
+          x=Math.sin(a)*.72;
+          y=.30+.04*Math.cos(a*3)+.01*Math.sin(a*7);
+          z=Math.max(Math.cos(a)*.66-.035,faceDepth(x,y)+.04);
         }else if(row===3){
           // Long, narrow separations open above the lower pointed ends.
-          const a=THREE.MathUtils.lerp(angle,(start+end)/2,.13);
+          const a=THREE.MathUtils.lerp(angle,(start+end)/2,.30);
           x=Math.sin(a)*.72;y=.07+.04*Math.cos(a*3);
           z=Math.max(Math.cos(a)*.66-.035,faceDepth(x,y)+.04);
         }else{x=tipX;y=tipY;z=Math.max(tipZ,faceDepth(x,y)+.035)}
