@@ -5,7 +5,8 @@ import { hairLock, hairCrown, tailoredMesh, pleatedSkirt, faceGeometry, backHair
 const P={hair:0xff9ac0,hairLight:0xffabc8,hairDark:0xed8ab1,pink:0xf8a4c0,skin:0xffded0,white:0xf7e5ec,skirt:0x393743,sock:0x32333e,shoe:0x5b4140};
 function material(color){return new THREE.MeshStandardMaterial({color,roughness:.92,flatShading:true})}
 const mats=Object.fromEntries(Object.entries(P).map(([k,v])=>[k,material(v)]));
-const faceSkin=new THREE.MeshBasicMaterial({color:0xf3d4d0,toneMapped:false});
+const faceSkin=new THREE.MeshBasicMaterial({color:0xf3d4d0,vertexColors:true,toneMapped:false});
+const earSkin=new THREE.MeshBasicMaterial({color:0xb297a6,toneMapped:false});
 // A modest head enlargement gives about 3.8 heads without changing the limb rig.
 export const BODY={height:3.86,hip:1.72,knee:.92,ankle:.13,shoulder:2.64,head:3.19,upperArm:.58,lowerArm:.64};
 const HEAD_ENLARGEMENT=1.12;
@@ -85,7 +86,7 @@ export function createCharacter(){
  const head=group(torso,[0,BODY.head,0]);
  head.scale.set(.66,.735,.76).multiplyScalar(HEAD_ENLARGEMENT);
  mesh(faceGeometry(),faceSkin,head);
- for(let side of [-1,1])oval(head,[.085,.14,.095],[side*.60,-.10,-.04],'skin');
+ for(let side of [-1,1])oval(head,[.085,.14,.095],[side*.60,-.10,-.04],earSkin);
  const faceTextures={};for(let {id} of EMOTIONS)for(let b of [false,true]){const t=new THREE.CanvasTexture(makeFace(id,b));t.colorSpace=THREE.SRGBColorSpace;faceTextures[`${id}-${b}`]=t}
  const face=mesh(faceSurfaceGeometry(),new THREE.MeshBasicMaterial({map:faceTextures['normal-false'],transparent:true,depthWrite:false,toneMapped:false}),head);face.castShadow=false;
  const crown=hairCrown(head,mats.hair);

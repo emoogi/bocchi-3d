@@ -291,7 +291,19 @@ export function faceGeometry() {
   const back=v.length/3;
   for(let i=0;i<n;i++){const k=(4*n+i)*3;v.push(v[k]*.91,v[k+1]*.95,-.25)}
   for(let i=0;i<n;i++){const a=4*n+i,b=4*n+(i+1)%n,c=back+i,d=back+(i+1)%n;ids.push(a,c,b,b,c,d)}
-  return geometry(v,ids);
+  // Shade the skin itself: the facial decal does not cover the temple or
+  // side walls, which otherwise shine through narrow gaps between locks.
+  const g=geometry(v,ids),positions=g.getAttribute('position'),colors=[];
+  const shade=new THREE.Color('#9b849c'),white=new THREE.Color('#ffffff');
+  for(let i=0;i<positions.count;i++){
+    const x=positions.getX(i),y=positions.getY(i),z=positions.getZ(i);
+    const forehead=THREE.MathUtils.smoothstep(y,.09,.25);
+    const side=THREE.MathUtils.smoothstep(Math.abs(x),.48,.61)*THREE.MathUtils.smoothstep(y,-.34,-.12);
+    const rear=1-THREE.MathUtils.smoothstep(z,-.22,.18);
+    const color=white.clone().lerp(shade,Math.max(forehead,side,rear));
+    colors.push(color.r,color.g,color.b);
+  }
+  g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));return g;
 }
 export function faceSurfaceGeometry() {
   const nx=32,ny=24,v=[],uv=[],ids=[];
