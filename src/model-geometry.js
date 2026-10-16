@@ -92,11 +92,50 @@ export function hairCrown(parent, material) {
   const top=v.length/3;v.push(0,.813,-.035);for(let i=0;i<n;i++)ids.push(i,(i+1)%n,top);
   const crownMaterial=material.clone();crownMaterial.flatShading=false;
   const crown=addMesh(parent,softFacets(geometry(v,ids),.36),crownMaterial);crown.name='Hair crown';
-  for(const [from,to,tipX,tipY,tipZ,tint] of [
+  const locks=[
     [-11,-7,-.54,-.32,.43,.94],[-7,-4,-.42,-.03,.56,1.025],
     [-4,-2,-.195,-.08,.60,.93],[-2,3,.025,-.165,.615,.985],
     [3,6,.26,.005,.575,1.04],[6,9,.47,-.03,.51,.95],[9,12,.59,-.32,.38,1.02],
-  ]){
+  ];
+  // Model the roots as one continuous sheet. Separate lock meshes begin only
+  // below this shared surface, so their V cuts cannot open through the crown.
+  // These limits coincide with the crown cells removed above. Keeping the
+  // yoke inside that opening avoids coplanar overlap and self-shadow seams.
+  const rootMin=-Math.PI/3,rootMax=Math.PI/3;
+  const rootAngles=[rootMin,rootMax];
+  for(let k=-n;k<=n;k++){
+    const a=k/n*Math.PI*2;
+    if(a>rootMin&&a<rootMax)rootAngles.push(a);
+  }
+  for(const lock of locks)for(const k of [lock[0],lock[1]]){
+    const a=k/64*Math.PI*2;if(a>rootMin&&a<rootMax)rootAngles.push(a);
+  }
+  rootAngles.sort((a,b)=>a-b);
+  const uniqueAngles=rootAngles.filter((a,i)=>!i||Math.abs(a-rootAngles[i-1])>1e-6);
+  const rootV=[],rootI=[];
+  for(const row of [0,1,2])for(const angle of uniqueAngles){
+    const q=(angle/(Math.PI*2)*n+n)%n,ia=Math.floor(q),f=q-ia;
+    let x,y,z;
+    const edgeIndex=Math.abs(angle-rootMin)<1e-6?n-4:Math.abs(angle-rootMax)<1e-6?4:null;
+    if(row>0&&edgeIndex!==null){
+      [x,y,z]=crownPoint(row+2,edgeIndex);
+    }else if(row===0){
+      x=THREE.MathUtils.lerp(v[(2*n+ia)*3],v[(2*n+(ia+1)%n)*3],f);
+      y=THREE.MathUtils.lerp(v[(2*n+ia)*3+1],v[(2*n+(ia+1)%n)*3+1],f);
+      z=THREE.MathUtils.lerp(v[(2*n+ia)*3+2],v[(2*n+(ia+1)%n)*3+2],f);
+    }else if(row===1){
+      x=Math.sin(angle)*.665;y=.42+.025*Math.cos(angle*3);
+      z=Math.max(Math.cos(angle)*.64-.035,faceDepth(x,y)+.04);
+    }else{
+      x=Math.sin(angle)*.72;y=.30+.04*Math.cos(angle*3)+.01*Math.sin(angle*7);
+      z=Math.max(Math.cos(angle)*.66-.035,faceDepth(x,y)+.04);
+    }
+    rootV.push(x,y,z);
+  }
+  joinRings(rootI,uniqueAngles.length,3,false);
+  const rootMaterial=material.clone();rootMaterial.side=THREE.DoubleSide;rootMaterial.flatShading=false;
+  const roots=addMesh(parent,softFacets(geometry(rootV,rootI),.52),rootMaterial);roots.name='Continuous fringe roots';
+  for(const [from,to,tipX,tipY,tipZ,tint] of locks){
     const start=from/64*Math.PI*2,end=to/64*Math.PI*2;
     const angles=[start,(start+end)/2,end];
     for(let k=-n;k<=n;k++){
@@ -105,28 +144,16 @@ export function hairCrown(parent, material) {
     }
     angles.sort((a,b)=>a-b);
     const cols=angles.length,grid=[],sv=[],si=[];
-    // All blades share the upper scalp profile. Only the lower row splits.
-    for(const row of [0,1,2,3,4]){
+    // The first row is shared with the root sheet; separation starts below it.
+    for(const row of [0,1,2]){
       grid.push([]);
       for(let c=0;c<cols;c++){
         const angle=angles[c];
-        const q=(angle/(Math.PI*2)*n+n)%n,ia=Math.floor(q),f=q-ia;
         let x,y,z;
         if(row===0){
-          x=THREE.MathUtils.lerp(v[(2*n+ia)*3],v[(2*n+(ia+1)%n)*3],f);
-          y=THREE.MathUtils.lerp(v[(2*n+ia)*3+1],v[(2*n+(ia+1)%n)*3+1],f);
-          z=THREE.MathUtils.lerp(v[(2*n+ia)*3+2],v[(2*n+(ia+1)%n)*3+2],f);
+          x=Math.sin(angle)*.72;y=.30+.04*Math.cos(angle*3)+.01*Math.sin(angle*7);
+          z=Math.max(Math.cos(angle)*.66-.035,faceDepth(x,y)+.04);
         }else if(row===1){
-          x=Math.sin(angle)*.665;
-          y=.42+.025*Math.cos(angle*3);
-          z=Math.max(Math.cos(angle)*.64-.035,faceDepth(x,y)+.04);
-        }else if(row===2){
-          const a=THREE.MathUtils.lerp(angle,(start+end)/2,.08);
-          x=Math.sin(a)*.72;
-          y=.30+.04*Math.cos(a*3)+.01*Math.sin(a*7);
-          z=Math.max(Math.cos(a)*.66-.035,faceDepth(x,y)+.04);
-        }else if(row===3){
-          // Long, narrow separations open above the lower pointed ends.
           const a=THREE.MathUtils.lerp(angle,(start+end)/2,.30);
           x=Math.sin(a)*.72;y=.07+.04*Math.cos(a*3);
           z=Math.max(Math.cos(a)*.66-.035,faceDepth(x,y)+.04);
@@ -137,18 +164,8 @@ export function hairCrown(parent, material) {
     for(let j=0;j<grid.length-1;j++)for(let c=0;c<cols-1;c++){
       const a=grid[j][c],b=grid[j][c+1],d=grid[j+1][c+1],e=grid[j+1][c];si.push(a,e,b);if(j<grid.length-2)si.push(b,e,d);
     }
-    // Stitch the two outer fringe edges to the remaining scalp boundary.
-    // Their profiles differ slightly; overlap alone leaves a triangular hole.
-    if(from===-11||to===12){
-      const col=from===-11?0:cols-1,meridian=from===-11?n-4:4,edge=[];
-      for(let j=0;j<3;j++){edge.push(sv.length/3);sv.push(...crownPoint(j+2,meridian))}
-      for(let j=0;j<2;j++){
-        const a=grid[j][col],b=grid[j+1][col],c=edge[j],d=edge[j+1];
-        si.push(a,b,c,c,b,d);
-      }
-    }
     const frontCount=si.length;
-    for(const col of [0,cols-1])for(let row=2;row<grid.length-1;row++){
+    for(const col of [0,cols-1])for(let row=1;row<grid.length-1;row++){
       const a=grid[row][col],b=grid[row+1][col],aa=sv.length/3;
       sv.push(sv[a*3],sv[a*3+1],sv[a*3+2]-.018,sv[b*3],sv[b*3+1],sv[b*3+2]-.018);
       if(col===0)si.push(a,aa,b,b,aa,aa+1);else si.push(a,b,aa,b,aa+1,aa);

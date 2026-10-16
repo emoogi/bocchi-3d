@@ -41,13 +41,6 @@ export function drawFace(canvas,emotion='normal',blink=false){
   shade.addColorStop(0,'rgba(59,66,94,.30)');shade.addColorStop(.45,'rgba(59,66,94,.24)');shade.addColorStop(.78,'rgba(59,66,94,.10)');shade.addColorStop(1,'rgba(59,66,94,0)');
   // Extend the same upper shadow through the newly deepened fringe openings.
   c.fillStyle=shade;c.fillRect(0,0,512,378);
-  // Carry the temple shade across the decal edge as well as the head mesh.
-  const temple=c.createLinearGradient(0,0,512,0);
-  temple.addColorStop(0,'rgba(75,56,82,.60)');
-  temple.addColorStop(.12,'rgba(75,56,82,0)');
-  temple.addColorStop(.88,'rgba(75,56,82,0)');
-  temple.addColorStop(1,'rgba(75,56,82,.60)');
-  c.fillStyle=temple;c.fillRect(0,0,512,430);
   for(let i=0;i<2;i++){
     const x=i?390:122,side=i?1:-1;
     if(emotion==='shy'){
