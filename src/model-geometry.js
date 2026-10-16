@@ -298,7 +298,7 @@ export function faceGeometry() {
   const shade=new THREE.Color('#9b849c'),white=new THREE.Color('#ffffff');
   for(let i=0;i<positions.count;i++){
     const x=positions.getX(i),y=positions.getY(i),z=positions.getZ(i);
-    const forehead=THREE.MathUtils.smoothstep(y,.03,.13);
+    const forehead=.55*THREE.MathUtils.smoothstep(y,.03,.13);
     const side=THREE.MathUtils.smoothstep(Math.abs(x),.48,.61)*THREE.MathUtils.smoothstep(y,-.34,-.12);
     const rear=1-THREE.MathUtils.smoothstep(z,-.22,.18);
     const color=white.clone().lerp(shade,Math.max(forehead,side,rear));

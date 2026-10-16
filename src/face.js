@@ -38,7 +38,7 @@ export function drawFace(canvas,emotion='normal',blink=false){
   // A restrained fringe shadow fades above the cheeks; it is shared by all
   // emotions and does not change the supplied eye silhouettes or add lashes.
   const shade=c.createLinearGradient(0,155,0,378);
-  shade.addColorStop(0,'rgba(59,66,94,.44)');shade.addColorStop(.45,'rgba(59,66,94,.34)');shade.addColorStop(.78,'rgba(59,66,94,.14)');shade.addColorStop(1,'rgba(59,66,94,0)');
+  shade.addColorStop(0,'rgba(59,66,94,.30)');shade.addColorStop(.45,'rgba(59,66,94,.24)');shade.addColorStop(.78,'rgba(59,66,94,.10)');shade.addColorStop(1,'rgba(59,66,94,0)');
   // Extend the same upper shadow through the newly deepened fringe openings.
   c.fillStyle=shade;c.fillRect(0,0,512,378);
   // Carry the temple shade across the decal edge as well as the head mesh.
